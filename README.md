@@ -2,7 +2,7 @@
 rw-build is a CLI tool for Rusted Warfare modding build.
 
 ## Installation
-npm is avaliable on npm.
+npm is avaliable via npm.
 ```
 npm install -g rw-build
 ```
