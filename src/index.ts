@@ -2,17 +2,17 @@ import path from "path";
 import fs from "fs";
 import os from "os";
 import walkdir from "walkdir";
-import toml from "toml";
 import mkdirp from "mkdirp";
 import { Command } from "@commander-js/extra-typings";
 const program = new Command();
 
-import { build, RwTomlConverterContext } from "rw-build-util/lib/builder/toml";
+import { RwTomlConverterContext } from "rw-build-util/lib/builder/toml";
 import { RwToml } from "rw-build-util/lib/data/toml";
-import * as rwtoml from "rw-build-util/lib/data/toml";
-import * as rwini from "rw-build-util/lib/data/ini";
-import { none } from "rw-build-util/lib/util/optional";
+import { rwtoml, rwini, rwbuilder, tomlbuilder, opt, result, modpath } from "rw-build-util"
 import { Path } from "rw-build-util/lib/util/path";
+const { build } = tomlbuilder;
+const { optional, some, none } = opt;
+const { ok, err } = result;
 
 async function readFileAsync(path: fs.PathOrFileDescriptor): Promise<Buffer> {
     return new Promise((resolve, reject) => fs.readFile(path, (error, data) => {
@@ -109,16 +109,7 @@ program.command('build')
         });
         result.ok(async (targets) => {
             for(const [pat, ini] of targets.map((x) => {
-                return [path.join(outdir, path.join(...x.path.map((v) => v)) + '.ini'), (() => {
-                    let str = '';
-                    for(const sec in x.content) {
-                        str += `[${sec}]` + '\n';
-                        for(const [key, value] of Object.entries(x.content[sec])) {
-                            str += `${key}:${value}` + '\n';
-                        }
-                    }
-                    return str;
-                })()]
+                return [path.join(outdir, path.join(...x.path.map((v) => v)) + '.ini'), rwini.toString(x.content)]
             })) {
                 await mkdirp(path.dirname(pat));
                 try {
